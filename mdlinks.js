@@ -12,10 +12,12 @@ import {
   getStatsResult,
   getHttpResponse,
   getResultValidateStats,
-} from './index';
+// eslint-disable-next-line import/extensions
+} from './index.js';
 
 // eslint-disable-next-line import/prefer-default-export
 export const mdLinks = (path, options) => new Promise((resolve) => {
+  console.log('entrando a mdlinks');
   if (existingPath(path)) {
     console.log('Ruta válida:', path);
     const resolvedPath = absPath(path) ? path : transformPath(path);

@@ -1,5 +1,7 @@
+#!/usr/bin/env nodo
 import chalk from 'chalk';
-import { mdLinks } from './mdlinks';
+// eslint-disable-next-line import/extensions
+import { mdLinks } from './mdlinks.js';
 
 const path = process.argv[2];
 const option1 = process.argv[3];

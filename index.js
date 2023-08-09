@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable prefer-promise-reject-errors */
 /* eslint-disable no-plusplus */
 import fs from 'fs';
 import path from 'path';
@@ -6,6 +8,7 @@ import axios from 'axios';
 // fs.existsSync(path);todo se usa paraisThisADirectory verificar
 // sincrónicamente si un archivo ya existe en la ruta dada o no.
 // Devuelve un valor booleano que indica la presencia de un archivo.
+// eslint-disable-next-line no-shadow
 export const existingPath = (path) => fs.existsSync(path);
 
 // El método path.isAbsolute ( ) devuelve cierto si la
@@ -75,6 +78,7 @@ const findMatches = (content, filePath) => {
 const readAndFindLinks = (filePath) => new Promise((resolve, reject) => {
   fs.readFile(filePath, 'utf-8', (err, content) => {
     if (err) {
+      // eslint-disable-next-line prefer-promise-reject-errors
       reject(`Error al leer el archivo: ${err}`);
       return;
     }
