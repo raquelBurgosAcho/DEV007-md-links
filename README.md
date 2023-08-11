@@ -67,7 +67,7 @@ Creación de una herramienta de línea de comando (CLI) así como una librería 
 
 ## 3. Diagramas de flujo
 Para la planeación de este proyecto se realizaron dos diagramas de flujo, Uno de los procesos que debe realizar la API y otro de lo que debe realizar el CLI.
-![Diagrama de flujo API](img-readme/Diagrama%20API.jpg)
+![Diagrama de flujo API](img\Diagrama API.jpg)
 
 ## 3. Como Realizar la Instalación
 Para instalar el módulo, simplemente ejecuta el siguiente comando en la terminal:

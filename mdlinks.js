@@ -17,7 +17,7 @@ import {
 
 // eslint-disable-next-line import/prefer-default-export
 export const mdLinks = (path, options) => new Promise((resolve) => {
-  console.log('entrando a mdlinks');
+  console.log('entrando a mdlinks', existingPath(path));
   if (existingPath(path)) {
     console.log('Ruta válida:', path);
     const resolvedPath = absPath(path) ? path : transformPath(path);

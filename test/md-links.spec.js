@@ -1,215 +1,144 @@
+import { mdLinks } from "../mdlinks.js";
 
-import axios from 'axios';
-import fs from 'fs';
-
-
-
-import { absPath, transformPath, getHttpResponse,getStatsResult, getResultValidateStats, isThisADirectory, isThisAMDFile } from '../index';
-//import axios from 'axios';
-import path from 'path';
-
-
-jest.mock('axios');
-jest.mock('fs');
-
-
-
-
-describe('absPath', () => {
-  it('should correctly identify an absolute path', () => {
-    const absolutePath = 'C:/Users/DELL/Desktop/mdlink/DEV007-md-links/prueba1/archivo.md';
-    expect(absPath(absolutePath)).toBe(true);
-  });
-
-  it('should correctly identify a relative path', () => {
-    const relativePath = 'prueba1';
-    expect(absPath(relativePath)).toBe(false);
-  });
-});
-
-describe('transformPath',() =>{
-  it('should transform a relative path to an absolute path',() =>{
-    const relativePath = 'prueba1'
-    const expectedAbsolutePath = path.resolve(relativePath);
-  expect(transformPath(relativePath)).toBe(expectedAbsolutePath)
-  })
+  describe("mdLinks", () => {
   
-    it('should not change an already absolute path', () => {
-      const absolutePath = 'C:\\Users\\DELL\\Desktop\\mdlink\\DEV007-md-links\\prueba1\\archivo.md';
-      expect(transformPath(absolutePath)).toBe(absolutePath);
-    });
-  }); 
-  
-  describe('getHttpResponse', () => {
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
-  
-    it('should return an array with the same length as the input', async () => {
-      const input = [
-        { href: 'http://example.com' },
-        { href: 'http://another-example.com' }
-      ];
-      axios.get.mockResolvedValue({ status: 200 });
-  
-      const result = await getHttpResponse(input);
-  
-      expect(result).toHaveLength(input.length);
-    });
-  
-    it('should attach status and ok properties to the elements', async () => {
-      const input = [{ href: 'http://example.com' }];
-      axios.get.mockResolvedValue({ status: 200 });
-  
-      const [result] = await getHttpResponse(input);
-  
-      expect(result).toHaveProperty('status', 200);
-      expect(result).toHaveProperty('ok', 'Ok');
-    });
-  
-    it('should handle successful and failed requests', async () => {
-      const successfulResponse = { status: 200 };
-      const error = { response: { status: 404 } };
-      const input = [
-        { href: 'http://successful-request.com' },
-        { href: 'http://failed-request.com' },
-      ];
-  
-      axios.get
-        .mockResolvedValueOnce(successfulResponse)
-        .mockRejectedValueOnce(error);
-  
-      const results = await getHttpResponse(input);
-  
-      expect(results[0]).toHaveProperty('status', 200);
-      expect(results[0]).toHaveProperty('ok', 'Ok');
-  
-      expect(results[1]).toHaveProperty('status', 404);
-      expect(results[1]).toHaveProperty('ok', 'Fail');
+  it("Cuando se ingresa un archivo sin --validate ni --stats", () => {
+    const path = "ejemplo.md";
+    const options = {};
+    return mdLinks(path, options).then((result) => {
+      expect(result).toEqual([
+        {
+          href: "https://es.wikipedia.org/wiki/Markdown",
+          text: "Markdown",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\ejemplo.md",
+        },
+        {
+          href: "https://nodejs.org/",
+          text: "Node.js",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\ejemplo.md",
+        },
+        {
+          href: "https://developers.google.com/v8/",
+          text: "motor de JavaScript V8 de Chrome",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\ejemplo.md",
+        },
+      ]);
     });
   });
 
-  describe('getStatsResult', () => {
-    it('should return the correct stats for an array with unique links', () => {
-      const input = [
-        { href: 'https://example.com' },
-        { href: 'https://another-example.com' }
+  it("Cuando se ingresa la ruta de un directorio sin --validate ni --stats", () => {
+    const path = "./Pruebas/Pruebasv02";
+    const options = {};
+
+    return mdLinks(path, options).then((result) => {
+      const expected = [
+        {
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\Pruebas\\Pruebasv02\\DosLinksSubDir.md",
+          href: "http://pokemongolive.com",
+          text: "Pokémon GO",
+        },
+        {
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\Pruebas\\Pruebasv02\\DosLinksSubDir.md",
+          href: "https://es.wikipedia.org/wiki/Markdown",
+          text: "Markdown",
+        },
+        {
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\Pruebas\\Pruebasv02\\BrokenLinksSubDir.md",
+          href: "http://httpstat.us/403",
+          text: "Forbidden Link",
+        },
+        {
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\Pruebas\\Pruebasv02\\BrokenLinksSubDir.md",
+          href: "https://neoattackddd.com/",
+          text: "Enlace roto",
+        },
       ];
-      const expectedStats = {
-        Total: 2,
-        Unique: 2,
-      };
-  
-      const result = getStatsResult(input);
-  
-      expect(result).toEqual(expectedStats);
-    });
-  
-    it('should return the correct stats for an array with duplicate links', () => {
-      const input = [
-        { href: 'https://example.com' },
-        { href: 'https://example.com' },
-        { href: 'https://another-example.com' }
-      ];
-      const expectedStats = {
-        Total: 3,
-        Unique: 2,
-      };
-  
-      const result = getStatsResult(input);
-  
-      expect(result).toEqual(expectedStats);
-    });
-  
-    it('should return the correct stats for an empty array', () => {
-      const input = [];
-      const expectedStats = {
-        Total: 0,
-        Unique: 0,
-      };
-  
-      const result = getStatsResult(input);
-  
-      expect(result).toEqual(expectedStats);
+
+      expect(result).toEqual(expect.arrayContaining(expected));
     });
   });
-  describe('getResultValidateStats', () => {
-    it('should return the correct stats for an array with unique links and no broken links', () => {
-      const input = [
-        { href: 'https://example.com', ok: 'Ok' },
-        { href: 'https://another-example.com', ok: 'Ok' }
-      ];
-      const expectedStats = {
-        Total: 2,
-        Unique: 2,
-        Broken: 0,
-      };
-  
-      const result = getResultValidateStats(input);
-  
-      expect(result).toEqual(expectedStats);
+
+  it("Cuando se ingresa la ruta de un directorio con --validate", () => {
+    const path = "./PruebasMini";
+    const options = { validate: true, stats: false };
+    return mdLinks(path, options).then((result) => {
+      expect(result).toEqual([
+        {
+          href: "https://www.laboratoria.la/",
+          text: "Laboratoria",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\PruebasMini\\DirectorioMini.md",
+          ok: "Ok",
+          status: 200,
+        },
+        {
+          href: "http://www.wikipedia.org",
+          text: "Wikipedia",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\PruebasMini\\DirectorioMini.md",
+          status: 200,
+          ok: "Ok",
+        },
+        {
+          href: "http://www.wikipedia.org",
+          text: "Wikipedia",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\PruebasMini\\DirectorioMini.md",
+          status: 200,
+          ok: "Ok",
+        },
+        {
+          href: "http://httpstat.us/403",
+          text: "Forbidden Link",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\PruebasMini\\DirectorioMini.md",
+          status: 403,
+          ok: "Fail",
+        },
+        {
+          href: "https://neoattackddd.com/",
+          text: "Enlace roto",
+          file: "C:\\Users\\Tania G Jimènez\\Documents\\Laboratoria\\Proyecto04\\DEV004-md-links\\PruebasMini\\DirectorioMini.md",
+          status: 404,
+          ok: "Fail",
+        },
+      ]);
     });
-  
-    it('should return the correct stats for an array with duplicate links and some broken links', () => {
-      const input = [
-        { href: 'https://example.com', ok: 'Fail' },
-        { href: 'https://example.com', ok: 'Ok' },
-        { href: 'https://another-example.com', ok: 'Fail' }
-      ];
-      const expectedStats = {
-        Total: 3,
-        Unique: 2,
+  });
+
+  it("Cuando se ingresa la ruta de un directorio con --stats", () => {
+    const path = "./PruebasMini";
+    const options = { stats: true, validate: false };
+    return mdLinks(path, options).then((result) => {
+      expect(result).toEqual({
+        Total: 5,
+        Unique: 4,
+      });
+    });
+  });
+
+  it("Cuando se ingresa la ruta de un directorio con --validate y --stats", () => {
+    const path = "./PruebasMini";
+    const options = { validate: true, stats: true };
+    return mdLinks(path, options).then((result) => {
+      expect(result).toEqual({
+        Total: 5,
+        Unique: 4,
         Broken: 2,
-      };
-  
-      const result = getResultValidateStats(input);
-  
-      expect(result).toEqual(expectedStats);
-    });
-  
-    it('should return the correct stats for an empty array', () => {
-      const input = [];
-      const expectedStats = {
-        Total: 0,
-        Unique: 0,
-        Broken: 0,
-      };
-  
-      const result = getResultValidateStats(input);
-  
-      expect(result).toEqual(expectedStats);
+      });
     });
   });
 
-  describe('isThisADirectory', () => {
-    it('should return true for a directory path', () => {
-      // Mock fs.statSync to return a directory-like object
-      fs.statSync.mockReturnValue({ isDirectory: () => true });
+  it('Cuando se ingresa una ruta que no existe', () => {
+    const path = './rutafalsa123';
+    const options = {};
   
-      const result = isThisADirectory('/path/to/directory');
-  
-      expect(result).toBe(true);
-    });
-  
-    it('should return false for a non-directory path', () => {
-      // Mock fs.statSync to return a non-directory-like object
-      fs.statSync.mockReturnValue({ isDirectory: () => false });
-  
-      const result = isThisADirectory('/path/to/file.txt');
-  
-      expect(result).toBe(false);
+    return new Promise((resolve) => {
+      mdLinks(path, options)
+        .then(() => {
+          throw new Error('La promesa debería haber sido rechazada');
+        })
+        .catch((error) => {
+          expect(error.message).toBe("La ruta no existe");
+          resolve();
+        });
     });
   });
-  describe('isThisAMDFile', () => {
-    it('deberia retornar true para archivo con extension .md', () => {
-      const filePath = 'file.md';
-      const result = isThisAMDFile(filePath);
-      expect(result).toBe(true);
-    });
-  
-    it('should return false for archivo sin extension .md', () => {
-      const filePath = 'archivo.txt';
-      const result = isThisAMDFile(filePath);
-      expect(result).toBe(false);
-    });
-  });
+
+});

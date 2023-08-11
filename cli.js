@@ -1,5 +1,6 @@
-#!/usr/bin/env nodo
+#!/usr/bin/env node
 import chalk from 'chalk';
+import process from 'node:process';
 // eslint-disable-next-line import/extensions
 import { mdLinks } from './mdlinks.js';
 

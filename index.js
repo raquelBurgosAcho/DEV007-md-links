@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-unused-vars */
 /* eslint-disable prefer-promise-reject-errors */
 /* eslint-disable no-plusplus */
@@ -22,6 +23,7 @@ export const transformPath = (converted) => path.resolve(converted);
 // fs.statSync() para obtener información sobre la
 // ruta y luego llama al método isDirectory()
 
+// eslint-disable-next-line no-shadow
 export const isThisADirectory = (path) => fs.statSync(path).isDirectory();
 
 // ? Es un archivo .md
