@@ -111,9 +111,9 @@ Si deseas obtener estadísticas más detalladas que incluyan el estado de los en
 
 ### CLI (Command Line Interface - Interfaz de Línea de Comando)
 ```bash
-md-links example.md --validate
-md-links example.md --stats
-md-links example.md --validate --stats 
+npx md-links example.md --validate
+npx md-links example.md --stats
+npx md-links example.md --validate --stats 
 ```
 
 
